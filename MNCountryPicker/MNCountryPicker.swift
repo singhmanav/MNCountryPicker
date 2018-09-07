@@ -46,7 +46,7 @@ open class MNCountryPicker : UIPickerView {
     public var pickedCountry : MNCountry?
     
     /// The delegate for the MNCountryPicker
-    public var countryDelegate : MNCountryPickerDelegate?
+    public weak var countryDelegate : MNCountryPickerDelegate?
     
     /// The type of the MNCountryPicker
     /// default is name
