@@ -14,8 +14,11 @@ public struct MNCountry {
     /// ISO country code of the country
     public let iso : String
     
-    /// Emoji flag of the country
-    public let emoji: String
+    /// flag flag of the country
+    public let flag: String
+    
+    /// Currency symbol of the country
+    public let currency:String
     
 }
 public protocol MNCountryPickerDelegate : UIPickerViewDelegate {
@@ -29,15 +32,27 @@ public protocol MNCountryPickerDelegate : UIPickerViewDelegate {
     func countryPicker(_ picker: MNCountryPicker, didSelectCountry country: MNCountry)
 }
 
+public enum MNCountryPickerType {
+    case name
+    case flag
+    case nameAndFlag
+    case nameAndCurrency
+    case all
+}
+
 open class MNCountryPicker : UIPickerView {
     
     /// The current picked MNCountry
-    open var pickedCountry : MNCountry?
+    public var pickedCountry : MNCountry?
     
     /// The delegate for the MNCountryPicker
-    open var countryDelegate : MNCountryPickerDelegate?
+    public var countryDelegate : MNCountryPickerDelegate?
     
-    /// The Content of the MNCountryPicker
+    /// The type of the MNCountryPicker
+    /// default is name
+    public var pickerType : MNCountryPickerType = .name
+    
+    /// The Datasource of the MNCountryPicker
     internal var countryData = [MNCountry]()
     
     public override init(frame: CGRect) {
@@ -58,16 +73,22 @@ open class MNCountryPicker : UIPickerView {
      Country Data generation
      */
     fileprivate func loadData() {
-        
-        for locale in NSLocale.isoCountryCodes{
-            let iso = locale
-            let name = NSLocale.current.localizedString(forRegionCode: locale)
-            let emoji = flag(country: iso)
-            let country = MNCountry(name: name!, iso: iso, emoji: emoji)
-            
-            // append country
-            countryData.append(country)
-        }
+        countryData = Locale.isoRegionCodes.map({
+            let locale = Locale(identifier: Locale.identifier(fromComponents: [NSLocale.Key.countryCode.rawValue: $0]))
+            let name = Locale.current.localizedString(forRegionCode: $0) ?? ""
+            return MNCountry(name: name, iso: $0, flag: flag(country: $0),currency: locale.currencySymbol ?? "")
+        })
+        //        for localeIdentifier in Locale.isoRegionCodes{
+        //            let locale = Locale(identifier: localeIdentifier)
+        //            let iso = locale.regionCode ?? ""
+        //            let name = Locale.current.localizedString(forRegionCode: iso) ?? ""
+        //            let flag = flag(country: iso)
+        //            let currency = locale.currencySymbol ?? ""
+        //            let country = MNCountry(name: name, iso: iso, flag: flag,currency: currency)
+        //
+        //            // append country
+        //            countryData.append(country)
+        //        }
         
         countryData.sort { $1.name > $0.name }
         self.reloadAllComponents()
@@ -84,10 +105,24 @@ func flag(country:String) -> String {
     return String(s)
 }
 
+
 extension MNCountryPicker : UIPickerViewDataSource {
     
     public func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return "\(countryData[row].emoji.description) - \(countryData[row].name.description)"
+        var title = ""
+        switch self.pickerType{
+        case .name:
+            title = "\(countryData[row].name.description)"
+        case .flag:
+            title = "\(countryData[row].flag.description)"
+        case .nameAndFlag:
+            title = "\(countryData[row].flag.description) - \(countryData[row].name.description)"
+        case .nameAndCurrency:
+            title = "\(countryData[row].name.description) - \(countryData[row].currency.description)"
+        case .all:
+            title = "\(countryData[row].flag.description) - \(countryData[row].name.description) - \(countryData[row].currency.description)"
+        }
+        return title
     }
     
     public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
