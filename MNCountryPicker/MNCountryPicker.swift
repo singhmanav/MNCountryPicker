@@ -78,18 +78,6 @@ open class MNCountryPicker : UIPickerView {
             let name = Locale.current.localizedString(forRegionCode: $0) ?? ""
             return MNCountry(name: name, iso: $0, flag: flag(country: $0),currency: locale.currencySymbol ?? "")
         })
-        //        for localeIdentifier in Locale.isoRegionCodes{
-        //            let locale = Locale(identifier: localeIdentifier)
-        //            let iso = locale.regionCode ?? ""
-        //            let name = Locale.current.localizedString(forRegionCode: iso) ?? ""
-        //            let flag = flag(country: iso)
-        //            let currency = locale.currencySymbol ?? ""
-        //            let country = MNCountry(name: name, iso: iso, flag: flag,currency: currency)
-        //
-        //            // append country
-        //            countryData.append(country)
-        //        }
-        
         countryData.sort { $1.name > $0.name }
         self.reloadAllComponents()
         
